@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ethio Language Box — Redesign</title>
+<style>
+  :root{
+    --bg:#fbf6ea;            /* cotton/parchment */
+    --paper:#fffdf7;
+    --surface:#f4ecda;
+    --ink:#1f2522;
+    --ink-soft:#5d5a50;
+    --line:#e3d8bf;
+    --green:#15623a;         /* deep forest */
+    --green-deep:#0e4527;
+    --gold:#e0a200;
+    --gold-soft:#f2c14e;
+    --red:#a8322a;
+    --blue:#2a558f;
+    --shadow:0 30px 70px -30px rgba(31,37,34,.45);
+    --shadow-sm:0 14px 34px -18px rgba(31,37,34,.5);
+    --serif:"Iowan Old Style","Palatino Linotype",Palatino,"Hoefler Text",Georgia,"Times New Roman",serif;
+    --sans:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --geez:"Noto Sans Ethiopic","Kefa","Abyssinica SIL",serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:var(--sans);
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+  /* paper grain + faint ge'ez wash */
+  body::before{
+    content:"";position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.5;
+    background-image:
+      radial-gradient(circle at 12% 18%,rgba(224,162,0,.07),transparent 40%),
+      radial-gradient(circle at 88% 8%,rgba(21,98,58,.06),transparent 45%),
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.035'/%3E%3C/svg%3E");
+  }
+  .wrap{max-width:1180px;margin:0 auto;padding:0 clamp(1.1rem,4vw,3.5rem);position:relative;z-index:1}
+  a{color:inherit;text-decoration:none}
+  h1,h2,h3{font-family:var(--serif);font-weight:600;line-height:1.08;letter-spacing:-.01em}
+
+  /* ---- tibeb band ---- */
+  .tibeb{height:10px;width:100%;
+    background:
+      repeating-linear-gradient(90deg,var(--green) 0 14px,var(--gold) 14px 20px,var(--red) 20px 26px,var(--green) 26px 28px);
+    opacity:.92;position:relative;z-index:2}
+  .tibeb.thin{height:5px;opacity:.8}
+
+  /* ---- top bar ---- */
+  header{position:sticky;top:0;z-index:50;background:rgba(251,246,234,.86);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+  .nav{display:flex;align-items:center;justify-content:space-between;height:72px}
+  .brand{display:flex;align-items:center;gap:.7rem;font-family:var(--serif);font-weight:700;font-size:1.18rem}
+  .mark{width:38px;height:38px;border-radius:9px;background:linear-gradient(145deg,var(--green),var(--green-deep));
+    display:grid;place-items:center;color:var(--gold-soft);font-family:var(--geez);font-size:1.3rem;box-shadow:var(--shadow-sm)}
+  .navlinks{display:flex;gap:1.6rem;font-size:.93rem;font-weight:500;color:var(--ink-soft)}
+  .navlinks a{position:relative;padding:.2rem 0}
+  .navlinks a::after{content:"";position:absolute;left:0;bottom:-3px;width:0;height:2px;background:var(--gold);transition:width .25s}
+  .navlinks a:hover{color:var(--ink)}
+  .navlinks a:hover::after{width:100%}
+  .nav-cta{display:flex;gap:.6rem;align-items:center}
+  @media(max-width:880px){.navlinks{display:none}}
+
+  .btn{display:inline-flex;align-items:center;gap:.5rem;font-weight:600;font-size:.92rem;border-radius:8px;
+    padding:.7rem 1.25rem;border:1.5px solid transparent;cursor:pointer;transition:transform .18s,box-shadow .18s,background .2s}
+  .btn:hover{transform:translateY(-2px)}
+  .btn-primary{background:var(--green);color:#fff;box-shadow:0 12px 26px -12px rgba(21,98,58,.8)}
+  .btn-primary:hover{background:var(--green-deep)}
+  .btn-gold{background:var(--gold);color:#3a2b00}
+  .btn-gold:hover{background:var(--gold-soft)}
+  .btn-ghost{border-color:var(--green);color:var(--green)}
+  .btn-ghost:hover{background:rgba(21,98,58,.07)}
+  .btn-sm{padding:.5rem .9rem;font-size:.85rem}
+
+  /* ---- hero ---- */
+  .hero{position:relative;padding:clamp(3rem,7vw,6rem) 0 clamp(3.5rem,6vw,5.5rem);overflow:hidden}
+  .hero-geez{position:absolute;inset:0;z-index:0;font-family:var(--geez);color:var(--green);opacity:.05;
+    font-size:clamp(7rem,22vw,20rem);line-height:.9;white-space:nowrap;font-weight:700;
+    transform:rotate(-6deg);top:8%;left:-4%;pointer-events:none;user-select:none}
+  .hero-grid{display:grid;grid-template-columns:1.15fr .85fr;gap:clamp(2rem,4vw,4rem);align-items:center;position:relative;z-index:1}
+  @media(max-width:900px){.hero-grid{grid-template-columns:1fr;gap:2.4rem}}
+  .eyebrow{display:inline-flex;align-items:center;gap:.55rem;font-family:var(--sans);font-size:.78rem;font-weight:700;
+    letter-spacing:.14em;text-transform:uppercase;color:var(--green);background:rgba(21,98,58,.09);
+    padding:.45rem .85rem;border-radius:100px;border:1px solid rgba(21,98,58,.18)}
+  .eyebrow .dot{width:7px;height:7px;border-radius:50%;background:var(--gold)}
+  h1.title{font-size:clamp(2.6rem,6vw,4.4rem);margin:1.2rem 0 .4rem}
+  h1.title .scriptline{display:block;font-family:var(--geez);color:var(--green);font-size:.62em;font-weight:700;margin-bottom:.15em}
+  .lead{font-size:1.18rem;color:var(--ink-soft);max-width:34ch}
+  .free{color:var(--red);font-weight:700;font-style:italic;font-family:var(--serif)}
+  .hero-actions{display:flex;flex-wrap:wrap;gap:.8rem;margin:1.8rem 0 1.4rem}
+  .mantra{font-family:var(--serif);font-style:italic;color:var(--green);font-size:1.02rem;border-left:3px solid var(--gold);padding-left:.9rem}
+
+  /* hero card */
+  .hero-card{background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:1.4rem;box-shadow:var(--shadow);position:relative}
+  .hero-card::before{content:"";position:absolute;inset:7px;border:1px solid rgba(224,162,0,.35);border-radius:11px;pointer-events:none}
+  .search{display:flex;align-items:center;gap:.7rem;background:var(--bg);border:1.5px solid var(--line);border-radius:10px;padding:.85rem 1rem;color:var(--ink-soft);font-size:.95rem}
+  .search .ic{color:var(--green)}
+  .search .go{margin-left:auto;color:var(--gold);font-weight:700}
+  .lang-chips{display:flex;flex-wrap:wrap;gap:.45rem;margin-top:1rem}
+  .chip{font-size:.82rem;padding:.4rem .7rem;border-radius:7px;background:var(--surface);border:1px solid var(--line);transition:.18s;cursor:pointer}
+  .chip:hover{background:var(--green);color:#fff;border-color:var(--green);transform:translateY(-2px)}
+  .chip .am{font-family:var(--geez);color:var(--gold);margin-right:.35rem}
+  .chip:hover .am{color:var(--gold-soft)}
+
+  /* ---- stat band ---- */
+  .statband{background:linear-gradient(135deg,var(--green-deep),var(--green));color:#fff;position:relative;z-index:1}
+  .stat-inner{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;padding:2.4rem 0}
+  @media(max-width:720px){.stat-inner{grid-template-columns:repeat(2,1fr);gap:1.6rem}}
+  .stat{text-align:center;position:relative}
+  .stat:not(:last-child)::after{content:"";position:absolute;right:0;top:15%;height:70%;width:1px;background:rgba(255,255,255,.16)}
+  @media(max-width:720px){.stat::after{display:none}}
+  .stat .num{font-family:var(--serif);font-size:clamp(2.2rem,5vw,3rem);font-weight:700;color:var(--gold-soft);line-height:1}
+  .stat .lbl{font-size:.82rem;letter-spacing:.08em;text-transform:uppercase;opacity:.85;margin-top:.4rem}
+
+  /* ---- sections ---- */
+  section.block{padding:clamp(3.2rem,6vw,5.5rem) 0}
+  .sec-head{max-width:60ch;margin-bottom:2.4rem}
+  .sec-eyebrow{font-size:.78rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin-bottom:.7rem;
+    display:flex;align-items:center;gap:.6rem}
+  .sec-eyebrow::before{content:"";width:26px;height:2px;background:var(--gold)}
+  .sec-head h2{font-size:clamp(1.9rem,4vw,2.8rem)}
+  .sec-head p{color:var(--ink-soft);margin-top:.7rem;font-size:1.06rem}
+
+  /* resource cards */
+  .res-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1.1rem}
+  @media(max-width:900px){.res-grid{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:520px){.res-grid{grid-template-columns:1fr}}
+  .res{background:var(--paper);border:1px solid var(--line);border-radius:13px;padding:1.5rem 1.4rem;transition:.22s;position:relative;overflow:hidden}
+  .res::after{content:"";position:absolute;left:0;top:0;height:100%;width:4px;background:var(--c);opacity:.85}
+  .res:hover{transform:translateY(-5px);box-shadow:var(--shadow);border-color:var(--c)}
+  .res .ico{width:46px;height:46px;border-radius:11px;display:grid;place-items:center;background:color-mix(in srgb,var(--c) 14%,white);color:var(--c);margin-bottom:1rem}
+  .ico svg,.ic svg,.go svg,.link svg,.cta svg,.btn svg,.note svg{display:block;flex:0 0 auto}
+  .res h3{font-size:1.18rem;margin-bottom:.35rem}
+  .res p{font-size:.92rem;color:var(--ink-soft);margin-bottom:1rem;min-height:2.6em}
+  .res .link{font-weight:700;font-size:.9rem;color:var(--c);display:inline-flex;gap:.4rem;align-items:center}
+  .res:hover .link{gap:.65rem}
+
+  /* parts — manuscript numerals */
+  .parts{display:grid;grid-template-columns:repeat(2,1fr);gap:1.1rem}
+  @media(max-width:720px){.parts{grid-template-columns:1fr}}
+  .part{display:flex;gap:1.2rem;background:var(--paper);border:1px solid var(--line);border-radius:13px;padding:1.6rem;align-items:flex-start;transition:.2s}
+  .part:hover{border-color:var(--gold);box-shadow:var(--shadow-sm);transform:translateY(-3px)}
+  .part .rom{font-family:var(--serif);font-size:2.2rem;font-weight:700;color:var(--gold);line-height:1;min-width:2.4rem}
+  .part .step{font-size:.74rem;letter-spacing:.12em;text-transform:uppercase;color:var(--green);font-weight:700}
+  .part h3{font-size:1.3rem;margin:.2rem 0 .4rem}
+  .part p{font-size:.93rem;color:var(--ink-soft);margin-bottom:.8rem}
+  .part .cta{display:inline-flex;align-items:center;gap:.35rem;font-size:.86rem;font-weight:700;color:var(--green)}
+
+  /* features */
+  .feat-band{background:var(--surface);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+  .feats{display:grid;grid-template-columns:repeat(3,1fr);gap:1.6rem}
+  @media(max-width:760px){.feats{grid-template-columns:1fr}}
+  .feat{position:relative;padding-top:1.4rem}
+  .feat .k{font-family:var(--geez);font-size:1.6rem;color:var(--gold);position:absolute;top:-.4rem;left:0;opacity:.55}
+  .feat h3{font-size:1.25rem;margin:.5rem 0 .5rem;border-top:2px solid var(--green);padding-top:1rem;display:inline-block}
+  .feat p{color:var(--ink-soft);font-size:.96rem}
+
+  /* audience */
+  .aud{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem}
+  @media(max-width:860px){.aud{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:560px){.aud{grid-template-columns:1fr}}
+  .lvl{background:var(--paper);border:1px solid var(--line);border-left:4px solid var(--blue);border-radius:11px;padding:1.3rem;transition:.2s}
+  .lvl:hover{transform:translateY(-3px);box-shadow:var(--shadow-sm)}
+  .lvl .tag{font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--blue)}
+  .lvl h3{font-size:1.12rem;margin:.3rem 0 .45rem}
+  .lvl p{font-size:.88rem;color:var(--ink-soft)}
+  .lvl:nth-child(1){border-left-color:var(--green)} .lvl:nth-child(1) .tag{color:var(--green)}
+  .lvl:nth-child(2){border-left-color:var(--blue)}
+  .lvl:nth-child(3){border-left-color:var(--gold)} .lvl:nth-child(3) .tag{color:var(--gold)}
+  .lvl:nth-child(4){border-left-color:var(--red)} .lvl:nth-child(4) .tag{color:var(--red)}
+  .lvl:nth-child(5){border-left-color:var(--green)} .lvl:nth-child(5) .tag{color:var(--green)}
+  .lvl:nth-child(6){border-left-color:var(--blue)}
+
+  /* LSRW */
+  .lsrw-band{background:linear-gradient(160deg,var(--green-deep),var(--green));color:#fff;position:relative;overflow:hidden}
+  .lsrw-band .hero-geez{opacity:.06;color:#fff;top:-10%;left:auto;right:-2%}
+  .lsrw{display:grid;grid-template-columns:repeat(4,1fr);gap:1.2rem;position:relative;z-index:1}
+  @media(max-width:780px){.lsrw{grid-template-columns:repeat(2,1fr)}}
+  .skill{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);border-radius:13px;padding:1.4rem}
+  .skill .big{font-family:var(--serif);font-size:2.6rem;font-weight:700;color:var(--gold-soft);line-height:1}
+  .skill h3{margin:.5rem 0 .4rem;font-size:1.1rem}
+  .skill p{font-size:.86rem;opacity:.86}
+
+  /* quotes */
+  .quotes{display:grid;grid-template-columns:repeat(2,1fr);gap:1.3rem}
+  @media(max-width:720px){.quotes{grid-template-columns:1fr}}
+  .quote{background:var(--paper);border:1px solid var(--line);border-radius:13px;padding:1.8rem;position:relative}
+  .quote::before{content:"\201C";font-family:var(--serif);position:absolute;top:.1rem;left:1rem;font-size:4.5rem;color:var(--gold);opacity:.35;line-height:1}
+  .quote p{font-family:var(--serif);font-style:italic;font-size:1.12rem;color:var(--ink);position:relative;z-index:1}
+  .quote .who{margin-top:1rem;font-weight:700;color:var(--green);font-size:.9rem;font-style:normal;font-family:var(--sans)}
+
+  /* about + cta */
+  .about{display:grid;grid-template-columns:1.1fr .9fr;gap:clamp(2rem,4vw,3.5rem);align-items:center}
+  @media(max-width:840px){.about{grid-template-columns:1fr}}
+  .about p{color:var(--ink-soft);margin-bottom:1rem;font-size:1.04rem}
+  .founder{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:1.8rem;box-shadow:var(--shadow-sm)}
+  .founder .av{width:60px;height:60px;border-radius:50%;background:linear-gradient(145deg,var(--gold),var(--red));display:grid;place-items:center;color:#fff;font-family:var(--serif);font-size:1.5rem;font-weight:700;margin-bottom:1rem}
+  .founder h3{font-size:1.2rem}
+  .founder .role{color:var(--green);font-weight:600;font-size:.9rem;margin-bottom:.8rem}
+  .partners{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:1rem}
+  .partners span{font-size:.78rem;background:var(--surface);border:1px solid var(--line);padding:.4rem .7rem;border-radius:7px}
+  .note{display:flex;align-items:flex-start;gap:.45rem;font-size:.78rem;color:var(--red);margin-top:.9rem;border-top:1px dashed var(--line);padding-top:.7rem}
+
+  /* footer */
+  footer{background:#14191a;color:#cfc9bb;padding:3rem 0 1.5rem;position:relative;z-index:1}
+  .foot-grid{display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;gap:2rem}
+  @media(max-width:760px){.foot-grid{grid-template-columns:1fr 1fr}}
+  footer h4{font-family:var(--sans);font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;color:var(--gold-soft);margin-bottom:.9rem}
+  footer a{display:block;color:#cfc9bb;opacity:.8;font-size:.9rem;margin-bottom:.5rem}
+  footer a:hover{opacity:1;color:#fff}
+  .foot-brand .mark{margin-bottom:.8rem}
+  .foot-brand p{font-size:.88rem;opacity:.7;max-width:30ch}
+  .foot-bottom{border-top:1px solid rgba(255,255,255,.1);margin-top:2.5rem;padding-top:1.3rem;display:flex;justify-content:space-between;flex-wrap:wrap;gap:1rem;font-size:.82rem;opacity:.7}
+
+  /* reveal animation */
+  .reveal{opacity:0;transform:translateY(22px);transition:opacity .7s ease,transform .7s ease}
+  .reveal.in{opacity:1;transform:none}
+  @media(prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none;transition:none}}
+</style>
+</head>
+<body>
+
+<div class="tibeb"></div>
+<header>
+  <div class="wrap nav">
+    <a class="brand" href="#"><span class="mark">አ</span> Ethio Language Box</a>
+    <nav class="navlinks">
+      <a href="#languages">Languages</a>
+      <a href="#learn">Learn</a>
+      <a href="#resources">Resources</a>
+      <a href="#about">About</a>
+      <a href="#docs">Documentation</a>
+    </nav>
+    <div class="nav-cta">
+      <a class="btn btn-ghost btn-sm" href="#login">Sign In</a>
+      <a class="btn btn-primary btn-sm" href="#languages">Explore Languages</a>
+    </div>
+  </div>
+</header>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-geez" aria-hidden="true">ቋንቋ የባህል መንገድ</div>
+  <div class="wrap hero-grid">
+    <div class="hero-copy reveal">
+      <span class="eyebrow"><span class="dot"></span> National language learning &amp; digital preservation</span>
+      <h1 class="title">
+        <span class="scriptline">ቋንቋችን፣ ማንነታችን</span>
+        Our Language,<br>Our Identity.
+      </h1>
+      <p class="lead">Learn all <strong>84 diverse Ethiopian languages</strong> <span class="free">for FREE</span> — with expert-designed guidebooks, native-speaker audio, mobile apps, and structured online courses.</p>
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="#languages">Explore Languages <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></a>
+        <a class="btn btn-gold" href="#learn">Start Learning</a>
+        <a class="btn btn-ghost" href="#resources">Download App</a>
+      </div>
+      <p class="mantra">Our Culture, Our Identity. — preserving Ethiopia's linguistic heritage, one language at a time.</p>
+    </div>
+    <div class="hero-card reveal">
+      <div class="search">
+        <span class="ic"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg></span>
+        <span>Search 84 Ethiopian languages…</span>
+        <span class="go"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></span>
+      </div>
+      <div class="lang-chips">
+        <span class="chip"><span class="am">አ</span>Amharic</span>
+        <span class="chip"><span class="am">A</span>Afaan Oromoo</span>
+        <span class="chip"><span class="am">ት</span>Tigrigna</span>
+        <span class="chip"><span class="am">A</span>Afar</span>
+        <span class="chip"><span class="am">S</span>Somali</span>
+        <span class="chip"><span class="am">ሲ</span>Sidaamu Afoo</span>
+        <span class="chip"><span class="am">ወ</span>Wolaita</span>
+        <span class="chip"><span class="am">H</span>Hadiyyisa</span>
+        <span class="chip"><span class="am">ካ</span>Kambaatissa</span>
+        <span class="chip"><span class="am">N</span>Nuer</span>
+        <span class="chip"><span class="am">ከ</span>Kafa</span>
+        <span class="chip">+74 more</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="tibeb thin"></div>
+
+<!-- STATS -->
+<section class="statband">
+  <div class="wrap stat-inner">
+    <div class="stat reveal"><div class="num">84</div><div class="lbl">Ethiopian Languages</div></div>
+    <div class="stat reveal"><div class="num">350</div><div class="lbl">Learning Topics</div></div>
+    <div class="stat reveal"><div class="num">4,253</div><div class="lbl">Predetermined Statements</div></div>
+    <div class="stat reveal"><div class="num">4</div><div class="lbl">Content Categories</div></div>
+  </div>
+</section>
+
+<!-- RESOURCES -->
+<section class="block" id="resources">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="sec-eyebrow">Learning resources</div>
+      <h2>Everything you need to learn — in one place</h2>
+      <p>Online courses, mobile apps, audio pronunciation tools, and multilingual self-study guidebooks, built for every Ethiopian language.</p>
+    </div>
+    <div class="res-grid">
+      <article class="res reveal" style="--c:var(--green)">
+        <div class="ico"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 7v14"/><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/></svg></div>
+        <h3>Online Courses</h3>
+        <p>Study with our structured curriculum, anytime online.</p>
+        <a class="link" href="#learn">Start Learning <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></a>
+      </article>
+      <article class="res reveal" style="--c:var(--blue)">
+        <div class="ico"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><path d="M12 18h.01"/></svg></div>
+        <h3>Mobile Apps</h3>
+        <p>Learn on the go with our interactive mobile applications.</p>
+        <a class="link" href="#">Download App <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></a>
+      </article>
+      <article class="res reveal" style="--c:var(--red)">
+        <div class="ico"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 14h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-7a9 9 0 0 1 18 0v7a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3"/></svg></div>
+        <h3>Audio Tools</h3>
+        <p>Perfect your pronunciation with native speaker audio examples.</p>
+        <a class="link" href="#">Listen Audio <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></a>
+      </article>
+      <article class="res reveal" style="--c:var(--gold)">
+        <div class="ico"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg></div>
+        <h3>Guide Books</h3>
+        <p>Self-study guide books designed for effective language learning.</p>
+        <a class="link" href="#">Get Book <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></a>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- FOUR PARTS -->
+<section class="block feat-band" id="learn">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="sec-eyebrow">The learning model · four parts</div>
+      <h2>From useful phrases to confident communication</h2>
+      <p>Not rote translation — logical formulas for natural communication, built step by step across four comprehensive parts.</p>
+    </div>
+    <div class="parts">
+      <article class="part reveal"><div class="rom">I</div><div><div class="step">Part One</div><h3>Structures</h3><p>Build a strong foundation by understanding sentence structures and how words fit together to create meaning.</p><span class="cta">Learn Structures <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></span></div></article>
+      <article class="part reveal"><div class="rom">II</div><div><div class="step">Part Two</div><h3>Conversation</h3><p>Practice real-life conversations and dialogues to gain confidence, fluency, and ease in everyday interactions.</p><span class="cta">Boost Conversation <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></span></div></article>
+      <article class="part reveal"><div class="rom">III</div><div><div class="step">Part Three</div><h3>Vocabulary</h3><p>Expand your word bank with essential terms and expressions for clear and effective communication.</p><span class="cta">Enrich Vocabulary <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></span></div></article>
+      <article class="part reveal"><div class="rom">IV</div><div><div class="step">Part Four</div><h3>Grammar</h3><p>Master the rules that guide language use, ensuring accuracy and clarity in speaking and writing.</p><span class="cta">Master the Rules <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></span></div></article>
+    </div>
+  </div>
+</section>
+
+<!-- UNIQUE FEATURES -->
+<section class="block">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="sec-eyebrow">Why it's different</div>
+      <h2>Unique features, expertly crafted</h2>
+    </div>
+    <div class="feats">
+      <div class="feat reveal"><span class="k">ሀ</span><h3>Expertly Designed</h3><p>Meticulously crafted by seasoned language professionals and linguistic experts, ensuring a unique, high-quality experience.</p></div>
+      <div class="feat reveal"><span class="k">ለ</span><h3>Not Just Translation</h3><p>This method avoids rote translation and memorization. Instead, it builds logical formulas for natural communication.</p></div>
+      <div class="feat reveal"><span class="k">ሐ</span><h3>Practical Focus</h3><p>Express present, past, future, and continuous actions through clear rules, examples, and exercises for real situations.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- AUDIENCE -->
+<section class="block feat-band">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="sec-eyebrow">Who is this course for?</div>
+      <h2>A path for every learner</h2>
+      <p>From understanding without speaking, to teaching and inspiring others — there's an entry point for you.</p>
+    </div>
+    <div class="aud">
+      <div class="lvl reveal"><div class="tag">Beginner</div><h3>Understand but not speak</h3><p>Comprehend Ethiopian languages but struggle to express yourself? Bridge that gap through structured speaking practice.</p></div>
+      <div class="lvl reveal"><div class="tag">Intermediate</div><h3>Speak, but not correctly</h3><p>Polish pronunciation and grammatical accuracy through targeted exercises.</p></div>
+      <div class="lvl reveal"><div class="tag">Advanced</div><h3>Speak, but not fluently</h3><p>Build speed, natural phrasing, and ease through immersion-based practice.</p></div>
+      <div class="lvl reveal"><div class="tag">Heart to Heart</div><h3>Speak with cultural depth</h3><p>Connect with cultural nuances and the emotional roots of the language.</p></div>
+      <div class="lvl reveal"><div class="tag">Polyglot Path</div><h3>Become multilingual</h3><p>Strengthen your skills while fitting into a broader multilingual journey.</p></div>
+      <div class="lvl reveal"><div class="tag">Expert</div><h3>Teach and Inspire</h3><p>Guide others, share knowledge, and help preserve the language for future generations.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- LSRW -->
+<section class="block lsrw-band">
+  <div class="hero-geez" aria-hidden="true">ማ</div>
+  <div class="wrap">
+    <div class="sec-head reveal" style="max-width:60ch">
+      <div class="sec-eyebrow" style="color:var(--gold-soft)">Master L.S.R.W skills</div>
+      <h2 style="color:#fff">Listening · Speaking · Reading · Writing</h2>
+      <p style="color:rgba(255,255,255,.82)">Four core skills, built through practical exercises and real-life scenarios — the foundation for lifelong success in any language.</p>
+    </div>
+    <div class="lsrw">
+      <div class="skill reveal"><div class="big">L</div><h3>Listening</h3><p>Understand the cultural practices of the Nations and Nationalities of Ethiopia.</p></div>
+      <div class="skill reveal"><div class="big">S</div><h3>Speaking</h3><p>Speak with the hearts of communities in their mother tongues on any topic.</p></div>
+      <div class="skill reveal"><div class="big">R</div><h3>Reading</h3><p>Read literature in indigenous languages and enrich contextual vocabulary.</p></div>
+      <div class="skill reveal"><div class="big">W</div><h3>Writing</h3><p>Write to friends or conduct business correspondence across communities.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- QUOTES -->
+<section class="block" id="languages">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="sec-eyebrow">On language</div>
+      <h2>Why preserving languages matters</h2>
+    </div>
+    <div class="quotes">
+      <figure class="quote reveal"><p>If you talk to a man in a language he understands that goes to his head. If you talk to him in his language that goes to his heart.</p><figcaption class="who">— Nelson Rolihlahla Mandela</figcaption></figure>
+      <figure class="quote reveal"><p>Language is the road map of a culture. It tells you where its people come from and where they are going.</p><figcaption class="who">— Rita Mae Brown</figcaption></figure>
+      <figure class="quote reveal"><p>A different language is a different vision of life.</p><figcaption class="who">— Federico Fellini</figcaption></figure>
+      <figure class="quote reveal"><p>When languages are lost, most of the knowledge that went with them gets lost.</p><figcaption class="who">— Nicholas Ostler</figcaption></figure>
+    </div>
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section class="block feat-band" id="about">
+  <div class="wrap about">
+    <div class="reveal">
+      <div class="sec-eyebrow">About the project</div>
+      <h2 style="font-size:clamp(1.8rem,4vw,2.6rem);margin-bottom:1rem">Documentation &amp; digital preservation of Ethiopia's languages</h2>
+      <p>The Ethio Language Box Project is dedicated to the documentation and digital preservation of Ethiopian languages — creating multilingual self-study guidebooks, mobile apps, online courses, and audio pronunciation tools to make language learning accessible to everyone.</p>
+      <p>We believe that preserving languages is essential to maintaining cultural heritage and diversity.</p>
+      <a class="btn btn-primary" href="#docs">Read the documentation <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></a>
+    </div>
+    <aside class="founder reveal">
+      <div class="av">KS</div>
+      <h3>Dr. K. Sekhar</h3>
+      <div class="role">Founder, Ethio Language Box</div>
+      <p style="font-size:.9rem;color:var(--ink-soft)">A national initiative to preserve and promote Ethiopia's rich linguistic heritage.</p>
+      <div class="partners">
+        <span>Ministry of Culture &amp; Sport</span>
+        <span>Akmonlink College</span>
+      </div>
+      <p class="note"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg><span>Ownership to confirm: documentation cites a Ministry of Education initiative aligned with Digital Ethiopia 2030. Reconcile before publishing.</span></p>
+    </aside>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer id="docs">
+  <div class="wrap foot-grid">
+    <div class="foot-brand">
+      <span class="mark">አ</span>
+      <p>Learn, preserve, and celebrate Ethiopia's languages — free, for everyone.</p>
+    </div>
+    <div><h4>Learn</h4><a href="#">Structures</a><a href="#">Conversation</a><a href="#">Vocabulary</a><a href="#">Grammar</a></div>
+    <div><h4>Platform</h4><a href="#">Languages</a><a href="#">Resources</a><a href="#">Mobile App</a><a href="#">Audio Tools</a></div>
+    <div><h4>Documentation</h4><a href="#">Project Overview</a><a href="#">System Architecture</a><a href="#">User Manuals</a><a href="#">FAQ</a></div>
+  </div>
+  <div class="wrap foot-bottom">
+    <span>© 2025 Ethio Language Box · Founded by Dr. K. Sekhar</span>
+    <span>Our Language, Our Identity.</span>
+  </div>
+  <div class="tibeb" style="margin-top:1.3rem"></div>
+</footer>
+
+<script>
+  const io=new IntersectionObserver((es)=>{es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}})},{threshold:.12});
+  document.querySelectorAll('.reveal').forEach((el,i)=>{el.style.transitionDelay=(Math.min(i%4,3)*0.08)+'s';io.observe(el)});
+</script>
+</body>
+</html>
